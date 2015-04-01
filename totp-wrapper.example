@@ -1,0 +1,4 @@
+#!/bin/bash
+# This is an example of a file you can place in your PATH to simplify running totp from your command line
+cd ~/Dropbox/Environment/Scripts/totp-support
+./totp.py list totp.json.enc
