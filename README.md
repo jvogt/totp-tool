@@ -4,6 +4,7 @@ A python tool to get totp keys from your command line.  Keys are stored in an en
 Usage:
 
 Create encrypted JSON file (use totp.json.example as an example of json format)
+
 	./totp.py encrypt infile \[outfile\]  (default is totp.json.enc)
 
 Decrypt json file:
