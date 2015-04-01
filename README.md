@@ -1,5 +1,5 @@
 # totp-tool
-A python tool to get totp keys from your command line.  Keys are stored in an encrypted json file.  Tool supports encryption / decryption of totp keys
+A python tool to generate 2fa codes from your command line.  Keys are stored in an encrypted json file.  Tool supports encryption / decryption of totp keys.
 
 Usage:
 
@@ -11,7 +11,7 @@ Decrypt json file:
 
 	./totp.py decrypt infile [outfile] (default is to print to stdout)
 
-Print totp codes:
+Generate 2fa codes:
 
 	./totp.py list
 
