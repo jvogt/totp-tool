@@ -3,6 +3,10 @@ A python tool to generate 2fa codes from your command line.  Keys are stored in 
 
 Usage:
 
+Install dependencies
+
+	sudo easy_install pyotp pycrypto
+
 Create encrypted JSON file (use totp.json.example as an example of json format)
 
 	./totp.py encrypt infile [outfile]  (default is totp.json.enc)
