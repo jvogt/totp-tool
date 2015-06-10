@@ -142,11 +142,11 @@ if sys.argv[1] == 'list':
 		else:
 			fail = False
 	for itemnum,item in enumerate(keys):
-		print "[%d] %s" % (itemnum,item['keyname'])
+		print "[%d] %s" % (itemnum+1,item['keyname'])
 	chosen = False
 	while not chosen:
 		try:
-			if len(keys) < 11:
+			if len(keys) < 10:
 				print("Choose a key:"),
 				idx = int(getch())
 				print idx
@@ -156,11 +156,11 @@ if sys.argv[1] == 'list':
 			print "Try again."
 
 		try:
-			chosen = keys[idx]
+			chosen = keys[idx-1]
 		except IndexError:
 			print "Try again."
-	key = pyotp.TOTP(item['key']).now()
-	print "TOTP Key for %s: %06d" % (chosen['keyname'], key)
+	key = str(pyotp.TOTP(keys[idx]['key']).now()).rjust(6,'0')
+	print "TOTP Key for %s: %s" % (chosen['keyname'], key)
 	print("Copy to clipboard? (y/n):"),
 	response = getch()
 	print response
