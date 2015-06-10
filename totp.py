@@ -7,6 +7,20 @@ from Crypto.Cipher import AES
 
 import getpass
 
+import subprocess
+
+def getClipboardData():
+ p = subprocess.Popen(['pbpaste'], stdout=subprocess.PIPE)
+ retcode = p.wait()
+ data = p.stdout.read()
+ return data
+
+def setClipboardData(data):
+ p = subprocess.Popen(['pbcopy'], stdin=subprocess.PIPE)
+ p.stdin.write(data)
+ p.stdin.close()
+ retcode = p.wait()
+
 def encrypt_file(key, in_filename, out_filename=None, chunksize=64*1024):
 	""" Encrypts a file using AES (CBC mode) with the
 		given key.
@@ -67,22 +81,94 @@ def decrypt_file(key, in_filename):
 
 
 def getKey(verify=False):
+		fail = True
+		while fail:
+			pswd = getpass.getpass('Passphrase:')
+			if verify:
+				pswd2 = getpass.getpass('Repeat:')
+				if pswd != pswd2:
+					print "Passphrase mismatch, try again!"
+				else:
+					fail = False
+			else:
+				fail = False
+		return hashlib.sha256(pswd).digest()
 
-	pswd = getpass.getpass('Passphrase:')
-	if verify:
-		pswd2 = getpass.getpass('Repeat:')
-		if pswd != pswd2:
-			print "passphrase mismatch"
-			sys.exit()
+class _Getch:
+    """Gets a single character from standard input.  Does not echo to the
+screen."""
+    def __init__(self):
+        try:
+            self.impl = _GetchWindows()
+        except ImportError:
+            self.impl = _GetchUnix()
 
-	return hashlib.sha256(pswd).digest()
+    def __call__(self): return self.impl()
 
+
+class _GetchUnix:
+    def __init__(self):
+        import tty, sys
+
+    def __call__(self):
+        import sys, tty, termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
+
+class _GetchWindows:
+    def __init__(self):
+        import msvcrt
+
+    def __call__(self):
+        import msvcrt
+        return msvcrt.getch()
+
+getch = _Getch()
 if sys.argv[1] == 'list':
 	in_filename = sys.argv[2] if len(sys.argv) > 2 else "totp.json.enc"
-	keys = json.loads(decrypt_file(getKey(), in_filename))
+	fail = True
+	while fail:
+		try:
+			keys = json.loads(decrypt_file(getKey(), in_filename))
+		except:
+			print "Decryption failed, try again!"
+		else:
+			fail = False
+	for itemnum,item in enumerate(keys):
+		print "[%d] %s" % (itemnum,item['keyname'])
+	chosen = False
+	while not chosen:
+		try:
+			if len(keys) < 11:
+				print("Choose a key:"),
+				idx = int(getch())
+				print idx
+			else:
+				idx = int(raw_input("Choose a key: "))
+		except ValueError:
+			print "Try again."
 
-	for key in keys:
-		print "%s:\t%06d" % (key['keyname'], pyotp.TOTP(key['key']).now())
+		try:
+			chosen = keys[idx]
+		except IndexError:
+			print "Try again."
+	key = pyotp.TOTP(item['key']).now()
+	print "TOTP Key for %s: %06d" % (chosen['keyname'], key)
+	print("Copy to clipboard? (y/n):"),
+	response = getch()
+	print response
+	if response == "y":
+		setClipboardData(str(key))
+		print "Successfuly copied to clipboard."
+	else:
+		print "Ok, bye!"
 
 
 if sys.argv[1] == 'encrypt':
