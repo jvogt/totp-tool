@@ -159,7 +159,7 @@ if sys.argv[1] == 'list':
 			chosen = keys[idx-1]
 		except IndexError:
 			print "Try again."
-	key = str(pyotp.TOTP(keys[idx]['key']).now()).rjust(6,'0')
+	key = str(pyotp.TOTP(chosen['key']).now()).rjust(6,'0')
 	print "TOTP Key for %s: %s" % (chosen['keyname'], key)
 	print("Copy to clipboard? (y/n):"),
 	response = getch()
